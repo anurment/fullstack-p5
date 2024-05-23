@@ -27,32 +27,49 @@ const App = () => {
   const noteFormRef = useRef()
   const loginFormRef = useRef()
 
+  useEffect(() => {
+    
+    const getBlogs = async () =>  {
+      const initialBlogs = await blogService.getAll()
+      setBlogs( initialBlogs)}
+      getBlogs() 
+      
+  }, [])
+
 
   useEffect(() => {
+    
     const loggedUserJson = window.localStorage.getItem('loggedBlogAppUser')
     if (loggedUserJson) {
       const user = JSON.parse(loggedUserJson)
       setUser(user)
       blogService.setToken(user.token)
-      
     }
 
     
-  }, [])
 
-  useEffect(() => {
-    const getBlogs = async () =>  {
-      const initialBlogs = await blogService.getAll()
-      setBlogs( initialBlogs)}
-      getBlogs()
-      
-  }, [])
+  /*const getBlogs = async () =>  {
+    const initialBlogs = await blogService.getAll()
+    setBlogs( initialBlogs)}
+    getBlogs() */
+    
+}, [])
+
+  
   
   const addBlog = async (blogObject) => {
     try{
       const returnedBlog = await blogService.create(blogObject)
+      const userData = {
+        id : user.id,
+        name: user.name,
+        username: user.username
+      }
+      const newBlog = {...returnedBlog, user: userData}
+      console.log(returnedBlog)
+      console.log(blogs[4])
       noteFormRef.current.toggleVisibility()
-      setBlogs(blogs.concat(returnedBlog))
+      setBlogs(blogs.concat(newBlog))
       setNotification('blog added')
       setTimeout(() => {
         setNotification(null)
@@ -68,38 +85,59 @@ const App = () => {
   
   }
 
+  const updateBlogLikes = async (id) => {
+    try{
+      const blogToChange = blogs.find(b => b.id === id)
+      const putRequestData = {...blogToChange, user: blogToChange.user.id, likes: blogToChange.likes+1,}
+      
+      const returnedBlog = await blogService.update(id, putRequestData)
+      const changedBlog = {...returnedBlog, user: blogToChange.user}
+      //console.log(returnedBlog)
+      //console.log(blogs[4])
+      setBlogs(blogs.map(b => b.id !== id ? b : changedBlog))
+      
+
+
+    } catch (exeption){
+      console.log(exeption)
+      setErrorMessage('something went wrong')
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
+
+    }
+  }
+
+  const handleBlogDelete = async (blog) => {
+    try{
+
+      const response = await blogService.remove(blog.id)
+      const filteredBlogs = blogs.filter(b => b.id !== blog.id)
+      setBlogs(filteredBlogs)
+      setNotification(`Removed blog ${blog.title} by ${blog.author}`)
+      setTimeout(() => {
+        setNotification(null)
+      }, 5000)
+
+
+    } catch (exception) {
+      setErrorMessage(`something went wrong when trying to remove the blog ${blog.title} by ${blog.author} `)
+      console.log(exception)
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
+    }
+  }
+   
+
   const handleLogin = async ({username, password}) => {
 
-    /*
-    loginFormRef.current.toggleVisibility()
-    loginService
-      .login(username, password)
-        .then(returnedUser => {
-        
-        setUser(returnedUser)
-        window.localStorage.setItem(
-          'loggedBlogAppUser', JSON.stringify(returnedUser))
-        blogService.setToken(returnedUser.token)  
-      })
-      .catch(error => {
-        setErrorMessage('wrong credentials')
-        setTimeout(() => {
-        setErrorMessage(null)
-        }, 5000)  
-      })
-    }
-    */
-    
-    //const username = credentials.username
-    //const password = credentials.password
-    
-    //console.log('logging in with', username, password)
     try {
       const user = await loginService.login({
         username, password
       })
       window.localStorage.setItem(
-        'loggedBlogappUser', JSON.stringify(user)
+        'loggedBlogAppUser', JSON.stringify(user)
       )
       blogService.setToken(user.token)
       setUser(user)
@@ -111,14 +149,12 @@ const App = () => {
     }
   }
   
-  
-
   const handleLogout = async (event) => {
     event.preventDefault()
     console.log('logging out with', user.username)
     try {
       setUser(null)
-      window.localStorage.removeItem('loggedBlogappUser')
+      window.localStorage.removeItem('loggedBlogAppUser')
       
       
     } catch (exception) {
@@ -129,26 +165,6 @@ const App = () => {
     }
   }
 
-  /*
-  const loginForm = () => {
-    const hideWhenVisible = { display: loginVisible ? 'none' : '' }
-    const showWhenVisible = { display: loginVisible ? '' : 'none' }
-
-    return (
-      <div>
-        <div style={hideWhenVisible}>
-          <button onClick={() => setLoginVisible(true)}>log in</button>
-        </div>
-        <div style={showWhenVisible}>
-          <LoginForm
-            handleLogin={handleLogin}
-          />
-          <button onClick={() => setLoginVisible(false)}>cancel</button>
-        </div>
-      </div>
-    )
-  }
-  */
   const logoutForm = () => (
     <form onSubmit= {handleLogout}>
       <button type="submit">logout</button>
@@ -161,9 +177,6 @@ const App = () => {
       <h2>Blogs</h2>
       <Notification message={notification} />
       <Error message={errorMessage} />
-      
-      
-      
       
       {!user && 
         <div>
@@ -183,8 +196,8 @@ const App = () => {
               />
           </Togglable>
         <div>
-          {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
+          {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
+          <Blog key={blog.id} blog={blog} user={user} updateLikes={updateBlogLikes} deleteBlog={handleBlogDelete} />
           )}
         </div>
         </div>
