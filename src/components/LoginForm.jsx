@@ -18,34 +18,34 @@ const LoginForm = ({ handleLogin }) => {
   }
 
 
-   return (
-     <div>
-       <h2>Login</h2>
- 
-       <form onSubmit={login}>
-         <div>
-           username
-           <input
-             value={username}
-             onChange={event => setUsername(event.target.value)}
-           />
-         </div>
-         <div>
-           password
-           <input
-             type="password"
-             value={password}
-             onChange={event => setPassword(event.target.value)}
-           />
-       </div>
-         <button type="submit">login</button>
-       </form>
-     </div>
-   )
- }
+  return (
+    <div>
+      <h2>Login</h2>
 
- LoginForm.propTypes = {
+      <form onSubmit={login}>
+        <div>
+           username
+          <input
+            value={username}
+            onChange={event => setUsername(event.target.value)}
+          />
+        </div>
+        <div>
+           password
+          <input
+            type="password"
+            value={password}
+            onChange={event => setPassword(event.target.value)}
+          />
+        </div>
+        <button type="submit">login</button>
+      </form>
+    </div>
+  )
+}
+
+LoginForm.propTypes = {
   handleLogin: PropTypes.func.isRequired
- }
- 
- export default LoginForm
+}
+
+export default LoginForm

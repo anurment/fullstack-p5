@@ -1,10 +1,10 @@
-import {useState} from 'react'
+import { useState } from 'react'
 
 const Blog = ({ blog, user, updateLikes, deleteBlog }) => {
 
   const [fullInfo, setFullInfo] = useState(false)
 
-  const showWhenFullInfo = { display: fullInfo ? '' : 'none'} 
+  const showWhenFullInfo = { display: fullInfo ? '' : 'none' }
   const buttonLabel = fullInfo ? 'hide' : 'view'
 
   const toggleFullInfo = () => {
@@ -21,10 +21,10 @@ const Blog = ({ blog, user, updateLikes, deleteBlog }) => {
 
   const addALike = (event) => {
     event.preventDefault()
-    
+
 
     updateLikes(blog.id)
-    
+
   }
 
   const removeBlog = (event) => {
@@ -40,21 +40,21 @@ const Blog = ({ blog, user, updateLikes, deleteBlog }) => {
 
 
   return(
-  <div style={blogStyle}>
-    <div>
-      {blog.title} {blog.author} 
-      <button onClick={toggleFullInfo}>{buttonLabel}</button>
-    </div><br />
-    <div style={showWhenFullInfo}>
-      {blog.url}<br />
-      {blog.likes}<button onClick={addALike}>like</button><br />
-      {blog.user.name}<br />
-      {(user.username === blog.user.username) && 
+    <div style={blogStyle}>
+      <div>
+        {blog.title} {blog.author}
+        <button onClick={toggleFullInfo}>{buttonLabel}</button>
+      </div><br />
+      <div style={showWhenFullInfo}>
+        {blog.url}<br />
+        {blog.likes}<button onClick={addALike}>like</button><br />
+        {blog.user.name}<br />
+        {(user.username === blog.user.username) &&
       <button onClick={removeBlog}>remove</button>
-      }
+        }
+      </div>
     </div>
-  </div> 
-  ) 
+  )
 }
 
 export default Blog
