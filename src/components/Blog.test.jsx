@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Blog from './Blog'
+import { vi } from 'vitest'
+import LoginForm from './LoginForm'
+
 
 
 test('renders only title and author', () => {
@@ -79,7 +82,7 @@ test('renders all information after button click', async () => {
 
 })
 
-test('renders all information after button click', async () => {
+test('if like button is clicked twice, the event handler is called twice', async () => {
 
     const testUser = {
         username: 'mluukkai',
@@ -93,35 +96,19 @@ test('renders all information after button click', async () => {
         likes: 1000,
         user: testUser
     }
-        render(<Blog blog={testBlog} user={testUser} />)
+    
+    const mockHandler = vi.fn()
 
-        let titleElement = screen.queryByText('test title')
-        let authorElement = screen.queryByText('test author')
-        let urlElement = screen.queryByText('testblog.fi')
-        let likesElement = screen.queryByText('1000')
+    render(<Blog blog={testBlog} user={testUser} updateLikes={mockHandler}  />)
 
-        expect(titleElement).toBeDefined()
-        expect(authorElement).toBeDefined()
-        expect(urlElement).toBeNull()
-        expect(likesElement).toBeNull()
+    const user = userEvent.setup()
 
-        const user = userEvent.setup()
+    const button = screen.getByText('like')
 
-        const button = screen.getByText('view')
+    await user.click(button)
+    await user.click(button)
 
-        await user.click(button)
-        
-        titleElement = screen.queryByText('test title')
-        authorElement = screen.queryByText('test author')
-        urlElement = screen.queryByText('testblog.fi')
-        likesElement = screen.queryByText('1000')
-
-        expect(titleElement).toBeDefined()
-        expect(authorElement).toBeDefined()
-        expect(urlElement).toBeDefined()
-        expect(likesElement).toBeDefined()
+    expect(mockHandler.mock.calls).toHaveLength(2)
 
 
 })
-
-
